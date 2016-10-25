@@ -210,7 +210,7 @@ class dynamixel_mx(object):
             response = self.write_data(id=id, start_address=24, data=enable_data)
         return response
 
-    def set_position(self, id, position):
+    def set_position(self, id, position, speed):
         """Set the position of a servo.
 
         Convenience function for setting the position setpoint. Underneath
@@ -221,6 +221,7 @@ class dynamixel_mx(object):
             position(int): Position in the range defined by the servo. The MX
                 servos have a resolution of 0xFFF for 360 degrees, but they
                 might have soft limits restraining the movement.
+			speed(int): It is a moving speed to Goal Position. 0~1023 (0X3FF) can be used, and the unit is about 0.114rpm. If it is set to 0, it means the maximum rpm. If it is 1023, it is about 117.07rpm.
 
         Returns:
             The status packet returned by the servo. False if no packet
@@ -230,9 +231,12 @@ class dynamixel_mx(object):
         setpoint_data = []
         setpoint_data.append(position & 0xFF)
         setpoint_data.append((position & 0xFF00) >> 8)
+		setpoint_data.append(speed & 0xFF) 
+		setpoint_data.append((speed & 0xFF00) >> 8)
         response = self.write_data(id=id, start_address=30, data=setpoint_data)
         return response
 
+		
     def get_position(self, id):
         """Query a servo for its position."""
         p = self.read_data(id, start_address=36, length=2)
@@ -305,7 +309,8 @@ class dynamixel_mx(object):
         self.write_data(id=id, start_address=26, data=d_gain)
 
 # Here comes some recovery tools:
-
+	
+	
     def scan_ids(self, verbose=False):
         """Scan for IDs on the bus.
 
@@ -407,3 +412,7 @@ class dynamixel_mx(object):
                 break
         self.serial_port.baudrate = current_baud
         return [hit, ids]
+
+class inverse_kin (obj):
+	"""inverse kinematic"""
+	def 
