@@ -1,4 +1,5 @@
-import serial import random
+import serial 
+import random
 import time
 import array
 
