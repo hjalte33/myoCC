@@ -231,8 +231,8 @@ class dynamixel_mx(object):
         setpoint_data = []
         setpoint_data.append(position & 0xFF)
         setpoint_data.append((position & 0xFF00) >> 8)
-		setpoint_data.append(speed & 0xFF) 
-		setpoint_data.append((speed & 0xFF00) >> 8)
+        setpoint_data.append(speed & 0xFF)
+        setpoint_data.append((speed & 0xFF00) >> 8)
         response = self.write_data(id=id, start_address=30, data=setpoint_data)
         return response
 
@@ -413,6 +413,6 @@ class dynamixel_mx(object):
         self.serial_port.baudrate = current_baud
         return [hit, ids]
 
-class inverse_kin (obj):
-	"""inverse kinematic"""
-	def 
+# class inverse_kin (obj):
+# 	"""inverse kinematic"""
+# 	def 
