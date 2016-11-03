@@ -210,6 +210,21 @@ class dynamixel_mx(object):
             response = self.write_data(id=id, start_address=24, data=enable_data)
         return response
 
+    def set_angle(self, id, angle, speed, isdeg=false):
+        
+        if isdeg == True: 
+            position = ((angle)+180)*(4096/360)
+        else:
+            position = ((angle)+pi)*(4096/(2*pi))
+
+        setpoint_data = []
+        setpoint_data.append(position & 0xFF)
+        setpoint_data.append((position & 0xFF00) >> 8)
+        setpoint_data.append(speed & 0xFF)
+        setpoint_data.append((speed & 0xFF00) >> 8)
+        response = self.write_data(id=id, start_address=30, data=setpoint_data)
+        return response
+
     def set_position(self, id, position, speed):
         """Set the position of a servo.
 
