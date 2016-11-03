@@ -2,6 +2,7 @@ import serial
 import random
 import time
 import array
+import math
 
 class dynamixel_mx(object):
     """Communication with Dynamixel MX servos."""
@@ -210,16 +211,16 @@ class dynamixel_mx(object):
             response = self.write_data(id=id, start_address=24, data=enable_data)
         return response
 
-    def set_angle(self, id, angle, speed, isdeg=false):
+    def set_angle(self, id, angle, speed, isdeg=False):
         
         if isdeg == True: 
             position = ((angle)+180)*(4096/360)
         else:
-            position = ((angle)+pi)*(4096/(2*pi))
+            position = ((angle)+math.pi)*(4096/(2*math.pi))
 
         setpoint_data = []
-        setpoint_data.append(position & 0xFF)
-        setpoint_data.append((position & 0xFF00) >> 8)
+        setpoint_data.append(int(position) & 0xFF)
+        setpoint_data.append((int(position) & 0xFF00) >> 8)
         setpoint_data.append(speed & 0xFF)
         setpoint_data.append((speed & 0xFF00) >> 8)
         response = self.write_data(id=id, start_address=30, data=setpoint_data)
