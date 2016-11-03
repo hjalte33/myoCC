@@ -211,9 +211,23 @@ class dynamixel_mx(object):
             response = self.write_data(id=id, start_address=24, data=enable_data)
         return response
 
-    def set_angle(self, id, angle, speed, isdeg=False):
+    def set_angle(self, id, angle, speed, isDeg=False):
+        """Set the position of the servo defined by an angle of either degrees or radians
+		
+		Args: 
+			id (int): Servo to move.
+			
+			angle(float): defines the angle the motor should turn. Zero is defined as the home position of the joint ~2048 motor value~
+				If the angle is in degrees, the bool flag 'isDeg' must be set to True 
+            
+			speed(int): It is a moving speed to Goal Position. 0~1023 (0X3FF) can be used, and the unit is about 0.114rpm. If it is set to 0, it means the maximum rpm. If it is 1023, it is about 117.07rpm.
+        Returns:
+            The status packet returned by the servo. False if no packet
+            was received.
+		
+		"""
         
-        if isdeg == True: 
+		if isDeg == True: 
             position = ((angle)+180)*(4096/360)
         else:
             position = ((angle)+math.pi)*(4096/(2*math.pi))
@@ -238,7 +252,6 @@ class dynamixel_mx(object):
                 servos have a resolution of 0xFFF for 360 degrees, but they
                 might have soft limits restraining the movement.
 			speed(int): It is a moving speed to Goal Position. 0~1023 (0X3FF) can be used, and the unit is about 0.114rpm. If it is set to 0, it means the maximum rpm. If it is 1023, it is about 117.07rpm.
-
         Returns:
             The status packet returned by the servo. False if no packet
             was received.
