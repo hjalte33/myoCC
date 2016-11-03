@@ -236,7 +236,17 @@ class dynamixel_mx(object):
         response = self.write_data(id=id, start_address=30, data=setpoint_data)
         return response
 
-		
+    def is_moving(self, id):
+        """check if the motor is still in motion"""
+        m = self.read_data(id, start_address=46, length=1)
+        if m[0] == 0:
+            return False
+        else:
+            return True
+
+    def set_acceleration(self, id, acceleration = 0):
+        a = self.write_data(id,start_address=73, data=acceleration)
+
     def get_position(self, id):
         """Query a servo for its position."""
         p = self.read_data(id, start_address=36, length=2)

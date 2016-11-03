@@ -9,11 +9,11 @@ driver.torque_enable(254,True)
 
 #get the robot slowly to it's home position.
 homePosition=[2048,2048,2048,2048,2048]
-poseOne=[2048,1024,3000,1500,700]
+poseOne=[2048,1800,3000,1500,700]
 
 #slowly move the moters to the home position 
 for n in xrange(0,5):
-	driver.set_position(n+1, homePosition[n], 10)
+	driver.set_position(n+1, homePosition[n], 20)
 
 #check if we are at the wanted pose
 
