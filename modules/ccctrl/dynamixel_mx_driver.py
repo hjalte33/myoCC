@@ -3,6 +3,7 @@ import random
 import time
 import array
 import math
+from kinematics import *
 
 class dynamixel_mx(object):
     """Communication with Dynamixel MX servos."""
@@ -357,9 +358,7 @@ class dynamixel_mx(object):
         d_gain = int(k_d * 250)
         self.write_data(id=id, start_address=26, data=d_gain)
 
-# Here comes some recovery tools:
-    
-    
+     # Here comes some recovery tools:
     def scan_ids(self, verbose=False):
         """Scan for IDs on the bus.
 
