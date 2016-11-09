@@ -11,5 +11,5 @@ to hook this up too when you are hooking rx, tx, vcc, and gnd up.
 
 """
 
-from .dynamixel_mx_driver import dynamixel_mx
-from .kinematics import *
+#from .dynamixel_mx_driver import dynamixel_mx
+from .kinematics import robot

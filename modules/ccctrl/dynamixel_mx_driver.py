@@ -3,7 +3,6 @@ import random
 import time
 import array
 import math
-from kinematics import *
 
 class dynamixel_mx(object):
     """Communication with Dynamixel MX servos."""
@@ -39,7 +38,7 @@ class dynamixel_mx(object):
 
         self._DtrForRS485 = DtrForRS485
 
-    def _construct_command(self, id, instruction, parameters=None):
+    def construct_command(self, id, instruction, parameters=None):
         # Preample 0xFF 0xFF
         command = [0xFF, 0xFF]
         # ID
@@ -62,8 +61,7 @@ class dynamixel_mx(object):
         command.append(checksum)
         return command
 
-
-    def _send_command(self, command, response_length, verbose=False):
+    def send_command(self, command, response_length, verbose=False):
         if verbose:
             print("Sending:")
             print(command)

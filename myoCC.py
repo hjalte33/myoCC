@@ -31,9 +31,9 @@ while True :
 tradj = [0,0,90]
 
 while tradj[2] > 65:
-	angels = ccctrl.ikine(*tradj)
+	angles = ccctrl.ikine(*tradj)
 	for n in range(0,3):
-		driver.set_angle(n+1,angels[n],50)
+		driver.set_angle(n+1,angles[n],50)
 	tradj[2] -= 0.3
 	
 	while True :
