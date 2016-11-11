@@ -38,7 +38,7 @@ class dynamixel_mx(object):
 
         self._DtrForRS485 = DtrForRS485
 
-    def construct_command(self, id, instruction, parameters=None):
+    def _construct_command(self, id, instruction, parameters=None):
         # Preample 0xFF 0xFF
         command = [0xFF, 0xFF]
         # ID
@@ -61,7 +61,7 @@ class dynamixel_mx(object):
         command.append(checksum)
         return command
 
-    def send_command(self, command, response_length, verbose=False):
+    def _send_command(self, command, response_length, verbose=False):
         if verbose:
             print("Sending:")
             print(command)
@@ -266,8 +266,9 @@ class dynamixel_mx(object):
 
     def is_moving(self, id):
         """check if the motor is still in motion"""
+        
         m = self.read_data(id, start_address=46, length=1)
-        if m[0] == 0:
+        if m[0] == 0 :
             return False
         else:
             return True
