@@ -14,13 +14,6 @@ class robot(dynamixel_mx):
 		else:
 			self.linkDim = linkDimentions
 	
-	def getAngles(self):
-		ang = []
-		for n in range(3) :
-			ang.append(super().get_angle(n+1))
-		
-		return ang
-	
 	def ikine (self, x, y, z):
 		z -= self.linkDim[0] #set the right world coordinate system
 		
@@ -47,8 +40,79 @@ class robot(dynamixel_mx):
 		position.append(self.linkDim[0] + self.linkDim[2]*(math.cos(th2)*math.sin(th1 + math.pi/2) + math.cos(th1 + math.pi/2)*math.sin(th2)) + self.linkDim[1]*math.sin(th1 + math.pi/2))
 		
 		return position	
+	def mvLin(self, goal = [0,0,0], velocity=0.1):
+		""" Velocity is in m/s """
+		
+		#first calculate where we are.
+		startPoint = self.fkine(*super().getAngles())
+		
+		#calculate vector to follow in cartesian space
+		#this piece of code is basicaly vector = goal - startPoint
+		vector = [i - j for i, j in zip(goal, startPoint)] 
+		
+		#calculate length of the vector. this is basicaly sqrt(x^2+y^2+z^2)
+		length = math.sqrt(((goal[0]-startPoint[0])**2)+((goal[1]-startPoint[1])**2)+((goal[2]-startPoint[2])**2))
+		
+		#set up a list of  pid controllers for each motor speed
+		linPID = [PID(1000,200,10), PID(1000,200,10), PID(1000,200,10)]
+		
+		#what time is it when we start
+		startTime = time.time()
+		
+		#initial speeds. Never let these be 0 
+		speeds [1,1,1]
+		
+		while timeFrac <= 1  : #run as long as we still have time
+			#calculate how much time we have left to do the movement.
+			#timeFrac is between 0 and 1 
+			#length in cm ; velocity in m/s
+			timeFrac = (time.time()-startTime)/((length/100)/velocity)
+			
+			#calculate trajectory
+			#traj = startPoint + (timeFrac * vector) 
+			#it gives the point where whe should be at the given time. 
+			newVector = [q * timeFrac for q in vector]
+			tradj = [i + j for i, j in zip(startPoint,newVector)]
+			
+			#pass the tradj to the ikine to get angles. 
+			tradjAng = self.ikine(*tradj)
+			
+			#move moters to tradjectory angles 
+			for x in range (0,3):
+				super().set_angle(x+1,tradjAng[x],speeds[x])
+			
+			"""
+			now controll the motor speeds so we will 
+			finish in time. This is done by having a
+			PID controller always checking if we the
+			motors are behind the position it should
+			have. 			
+			"""
+			#now where the motors are moving we get
+			#the angles right now .
+			nowAngles = super().getAngles()
+			
+			#calculate error
+			error = [i - j for i, j in zip(nowAngles, tradjAng)]
+			
+			#update PID 
+			for index, item in enumerate(linPID):
+				item.update(error[index])
+			
+			#get PID output and put into speeds
+			#we add one to ensure speed stays above 1
+			for index, item in enumerate(linPID):
+				speeds[index] = math.fabs(item.output)+1
+			
+			#get the output of the PID and write it as motor speeds 
+			for index, item in enumerate(linPID):
+				data = []
+				data.append(int(item.output[index]) & 0xFF)
+				data.append((int(item.output[index]) & 0xFF00) >> 8)
+				super().write_data(index+1,32,data)
+				print(data)
 	
-	def mvLinB(self, goal=[0,0,0], velocity=0.01):
+	def mvLinOld(self, goal=[0,0,0], velocity=0.01):
 		"""
 		velocity is in m/s
 		"""
@@ -57,7 +121,7 @@ class robot(dynamixel_mx):
 		goalAngles = self.ikine(*goal)
 		
 		#first calculate where we are.
-		startPoint = self.fkine(*self.getAngles())
+		startPoint = self.fkine(*super().getAngles())
 		
 		#calculate vector to follow
 		#this piece of code is basicaly vector = point - nowPoints
@@ -82,7 +146,7 @@ class robot(dynamixel_mx):
 		#messuer how far away we are from the tradjectory and set motor speeds accordingly 
 		#uses the pid controller 	
 		speeds = [1,1,1]
-		while self.getAngles() != goalAngles:
+		while super().getAngles() != goalAngles:
 			
 			timeFrac = (time.time()-startTime)/(length/velocity)
 			#calculate the tradjectory
@@ -92,7 +156,7 @@ class robot(dynamixel_mx):
 			tradj = [i + j for i, j in zip(startPoint,tmpVector)]
 			tradjAng = self.ikine(*tradj)
 			
-			nowAngles = self.getAngles()
+			nowAngles = super().getAngles()
 			
 			for index, item in enumerate(linPID):
 				item.SetPoint = tradjAng[index]
@@ -117,10 +181,8 @@ class robot(dynamixel_mx):
 				super().write_data(n+1,32,data)
 				print(data)
 					
-				
-			
-	
-	def mvLin(self, point, velocity=10):
+
+	def mvLinOlder(self, point, velocity=10):
 		
 		#first get the angles we have now.
 		nowAngles = []
