@@ -292,6 +292,14 @@ class dynamixel_mx(object):
             angle = (pos-2048)*((2*math.pi)/4096)
         return angle
         
+    def getAngles(self):
+        """get all the angles from motor 1 through 3 
+        and return them as a list """
+        ang = []
+        for n in range(3) :
+            ang.append(self.get_angle(n+1))
+        return ang
+        
     def get_voltage(self, id):
         """Get the voltage in the servo."""
         v = self.read_data(id, start_address=42, length=1)
