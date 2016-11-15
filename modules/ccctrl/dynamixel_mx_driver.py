@@ -368,7 +368,7 @@ class dynamixel_mx(object):
         print(v)
         return v[0]/10.0
     
-    def get_torque(self,id)
+    def get_torque(self,id):
         t = self.read_data(id, 40, 2)
         torque = t[0] + t[1]*256
         return torque

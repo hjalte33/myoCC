@@ -244,3 +244,40 @@ class robot(dynamixel_mx):
 	def mvPath(path=[]):
 		#some code (rip writing this)
 		pass
+		
+	def closeGrip(self, speed=10, strength=10 , amount=None):
+		if amount != None:
+			super().set_angle(4, super().get_angle(4) + amount, speed)
+			super().set_angle(5, super().get_angle(5) - amount, speed)
+		else :
+			super().set_angle(4, 0, speed)
+			super().set_angle(5, 0, speed)
+		
+		#see if we exceed the strength
+		while (super().get_torque(4) > 1024-strength and super().get_torque(5) < 1024+strength) or super().is_moving == True : 
+			#the while loop might check the three conditions too quickly 
+			#so the code migt have to be slowed down.
+			time.sleep(0.05)#the waiting game
+			pass
+		#	
+		super().stop(4)
+		super().stop(5)
+	
+	def openGrip(self, speed=10, amount=10):
+		super().set_angle(4, super().get_angle(4) - amount, speed)
+		super().set_angle(5, super().get_angle(5) + amount, speed)
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
