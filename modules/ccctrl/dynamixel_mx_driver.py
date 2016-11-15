@@ -264,48 +264,9 @@ class dynamixel_mx(object):
         response = self.write_data(id=id, start_address=30, data=setpoint_data)
         return response
 
-    def is_moving(self, id):
-        """check if the motor is still in motion"""
-        
-        m = self.read_data(id, start_address=46, length=1)
-        if m[0] == 0 :
-            return False
-        else:
-            return True
-
     def set_acceleration(self, id, acceleration = 0):
         a = self.write_data(id,start_address=73, data=acceleration)
-
-    def get_position(self, id):
-        """Query a servo for its position."""
-        p = self.read_data(id, start_address=36, length=2)
-        pos = p[0] + p[1]*256
-        return pos
-
-    def get_angle(self, id, isDeg=False):
-        """return the angle value in radians or degrees. 2048 is 0 """
-        p = self.read_data(id, start_address=36, length=2)
-        pos = p[0] + p[1]*256
-        if isDeg == True:
-            angle = (pos-2048)*(360/4096)
-        else:
-            angle = (pos-2048)*((2*math.pi)/4096)
-        return angle
-        
-    def getAngles(self):
-        """get all the angles from motor 1 through 3 
-        and return them as a list """
-        ang = []
-        for n in range(3) :
-            ang.append(self.get_angle(n+1))
-        return ang
-        
-    def get_voltage(self, id):
-        """Get the voltage in the servo."""
-        v = self.read_data(id, start_address=42, length=1)
-        print(v)
-        return v[0]/10.0
-
+    
     def set_baudrate(self, rate):
         """Set a new baud rate.
 
@@ -364,6 +325,53 @@ class dynamixel_mx(object):
 
         d_gain = int(k_d * 250)
         self.write_data(id=id, start_address=26, data=d_gain)
+
+    def is_moving(self, id):
+        """check if the motor is still in motion"""
+        
+        m = self.read_data(id, start_address=46, length=1)
+        if m[0] == 0 :
+            return False
+        else:
+            return True
+
+    def stop(self,id):
+        self.set_position(id, self.get_position(id),1)
+        
+    def get_position(self, id):
+        """Query a servo for its position."""
+        p = self.read_data(id, start_address=36, length=2)
+        pos = p[0] + p[1]*256
+        return pos
+
+    def get_angle(self, id, isDeg=False):
+        """return the angle value in radians or degrees. 2048 is 0 """
+        p = self.read_data(id, start_address=36, length=2)
+        pos = p[0] + p[1]*256
+        if isDeg == True:
+            angle = (pos-2048)*(360/4096)
+        else:
+            angle = (pos-2048)*((2*math.pi)/4096)
+        return angle
+        
+    def get_angles(self):
+        """get all the angles from motor 1 through 3 
+        and return them as a list """
+        ang = []
+        for n in range(3) :
+            ang.append(self.get_angle(n+1))
+        return ang
+        
+    def get_voltage(self, id):
+        """Get the voltage in the servo."""
+        v = self.read_data(id, start_address=42, length=1)
+        print(v)
+        return v[0]/10.0
+    
+    def get_torque(self,id)
+        t = self.read_data(id, 40, 2)
+        torque = t[0] + t[1]*256
+        return torque
 
      # Here comes some recovery tools:
     def scan_ids(self, verbose=False):
