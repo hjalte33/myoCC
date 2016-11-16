@@ -336,7 +336,7 @@ class dynamixel_mx(object):
             return True
 
     def stop(self,id):
-        self.set_position(id, self.get_position(id),1)
+        self.set_position(id, self.get_position(id),100)
         
     def get_position(self, id):
         """Query a servo for its position."""
@@ -347,12 +347,14 @@ class dynamixel_mx(object):
     def get_angle(self, id, isDeg=False):
         """return the angle value in radians or degrees. 2048 is 0 """
         p = self.read_data(id, start_address=36, length=2)
-        pos = p[0] + p[1]*256
-        if isDeg == True:
-            angle = (pos-2048)*(360/4096)
-        else:
-            angle = (pos-2048)*((2*math.pi)/4096)
-        return angle
+        if p != False:
+            pos = p[0] + p[1]*256
+            if isDeg == True:
+                return (pos-2048)* 0.087890625 #360/4096
+            else:
+                return (pos-2048)*(0.0015339807878856412) #2*math.pi)/4096
+        else :
+            return False
         
     def get_angles(self):
         """get all the angles from motor 1 through 3 
@@ -361,7 +363,7 @@ class dynamixel_mx(object):
         for n in range(3) :
             ang.append(self.get_angle(n+1))
         return ang
-        
+    
     def get_voltage(self, id):
         """Get the voltage in the servo."""
         v = self.read_data(id, start_address=42, length=1)
@@ -370,8 +372,7 @@ class dynamixel_mx(object):
     
     def get_torque(self,id):
         t = self.read_data(id, 40, 2)
-        torque = t[0] + t[1]*256
-        return torque
+        return  t[0] + t[1]*256
 
      # Here comes some recovery tools:
     def scan_ids(self, verbose=False):
