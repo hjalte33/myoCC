@@ -328,16 +328,18 @@ class dynamixel_mx(object):
 
     def is_moving(self, id):
         """check if the motor is still in motion"""
-        
-        m = self.read_data(id, start_address=46, length=1)
-        if m[0] == 0 :
+        m = None
+        while type(m) != list:
+			#wait till we get a proper answer from the motors
+            m = self.read_data(id, start_address=46, length=1)
+        if m[0] == 0:
             return False
-        else:
+        else :
             return True
 
     def stop(self,id):
         self.set_position(id, self.get_position(id),100)
-        
+           
     def get_position(self, id):
         """Query a servo for its position."""
         p = self.read_data(id, start_address=36, length=2)
@@ -371,7 +373,9 @@ class dynamixel_mx(object):
         return v[0]/10.0
     
     def get_torque(self,id):
-        t = self.read_data(id, 40, 2)
+        t= False
+        while type(t) != list:
+            t = self.read_data(id, 40, 2)
         return  t[0] + t[1]*256
 
      # Here comes some recovery tools:

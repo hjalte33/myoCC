@@ -249,19 +249,21 @@ class robot(dynamixel_mx):
 		else :
 			super().set_angle(4, -4, speed,True)
 			super().set_angle(5, 4, speed,True)
-		
+		time.sleep(0.05)
 		#see if we exceed the strength
 		while super().get_torque(4) < strength and super().get_torque(5) < 1024 + strength and super().is_moving(4) == True : 
 			#the while loop might check the three conditions too quickly 
 			#so the code migt have to be slowed down.
 			pass
 		#	
+		time.sleep(0.1)
 		super().stop(4)
 		super().stop(5)
 	
-	def openGrip(self, speed=10, amount=10):
-		super().set_angle(4, super().get_angle(4,True) + amount, speed,True)
-		super().set_angle(5, super().get_angle(5,True) - amount, speed,True)
+	def openGrip(self, speed=10, amount=30):
+		if amount > self.get_angle(4,True) and amount > self.get_angle(5,True):
+			super().set_angle(4,   amount, speed,True)
+			super().set_angle(5, - amount, speed,True)
 		
 	
 	
