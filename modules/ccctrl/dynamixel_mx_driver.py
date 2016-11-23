@@ -6,7 +6,7 @@ import math
 
 class dynamixel_mx(object):
     """Communication with Dynamixel MX servos."""
-    def __init__(self, port, baudrate=1000000, timeout=0.02, DtrForRS485=False):
+    def __init__(self, port, baudrate=1000000, timeout=1, DtrForRS485=False):
         """Entry point for communicating with the Dynamixel servos.
 
         Args:

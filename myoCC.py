@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import time
-
+import sys
 from modules import ccctrl
 #from modules import readCsv
 from modules import myo as libmyo ; libmyo.init('./myo-sdk-win-0.9.0/bin')
-cc=ccctrl.robot('COM9')
-#on windows write the com port as 'COM9' if its port 9.
+
 
 class Listener(libmyo.DeviceListener):
 	"""
@@ -46,12 +45,9 @@ class Listener(libmyo.DeviceListener):
 		self.rssi = None
 		self.emg = None
 		self.last_time = 0
-
+		
 	def output(self):
-		ctime = time.time()
-		if (ctime - self.last_time) < self.interval:
-			return
-		self.last_time = ctime
+		
 		parts = []
 		if self.orientation:
 			parts.append(str(self.pose).ljust(10))
@@ -66,16 +62,15 @@ class Listener(libmyo.DeviceListener):
 
 	def on_rssi(self, myo, timestamp, rssi):
 		self.rssi = rssi
-		self.output()
+		
 
 	def on_pose(self, myo, timestamp, pose):
-		if pose == libmyo.Pose.double_tap:
-			myo.set_stream_emg(libmyo.StreamEmg.enabled)
-			self.emg_enabled = True
-		elif pose == libmyo.Pose.fingers_spread:
-			super().openGrip(speed = 50)
-		elif pose == libmyo.Pose.fist:
-			super().closeGrip(speed = 50)
+		if pose == libmyo.Pose.fist:
+			myo.vibrate('short')
+			cc.closeGrip(speed = 100, strength = 350)
+		if pose == libmyo.Pose.fingers_spread:
+			myo.vibrate('short')
+			cc.openGrip(speed = 100)
 		self.pose = pose
 		self.output()
 
@@ -90,8 +85,9 @@ class Listener(libmyo.DeviceListener):
 		pass
 
 	def on_emg_data(self, myo, timestamp, emg):
-		self.emg = emg
-		self.output()
+		print(emg)
+		#self.emg = emg
+		#self.output()
 
 	def on_unlock(self, myo, timestamp):
 		self.locked = False
@@ -149,10 +145,10 @@ class Listener(libmyo.DeviceListener):
 		Called when the warmup completed.
 		"""
 
+cc=ccctrl.robot('COM9')
+#on windows write the com port as 'COM9' if its port 9.
 
-
-
-
+		
 #lock all motors so it's not just a coocked spagetti robot
 cc.torque_enable(254,True)
 cc.set_acceleration(4,5)
@@ -166,46 +162,56 @@ def wait():
 			var = 0
 		else:
 			var += 1
+	time.sleep(0.05)		
 			
+
+			
+
 print("Connecting to Myo ... Use CTRL^C to exit.")
 try:
 	hub = libmyo.Hub()
+	feed = libmyo.device_listener.Feed()
 except MemoryError:
 	print("Myo Hub could not be created. Make sure Myo Connect is running.")
-	return
 	
 hub.set_locking_policy(libmyo.LockingPolicy.none)
-hub.run(1000, Listener())
+hub.run(2000,feed())
 
-# Listen to keyboard interrupts and stop the hub in that case.
+print("\nconnected")
+
+		# Listen to keyboard interrupts and stop the hub in that case.
 try:
-	while hub.running :
-		cc.mvPTP([20,0,60],50)
+	while True:
+		cc.mvPTP([20,0,60],velocity = 50)
 		wait()
 		#cc.closeGrip(strength=200)
 		if cc.get_angle(4,True) < 5 : #are we holding the ball?
 			cc.openGrip(amount=20,speed=200)
 		cc.openGrip(speed = 50,amount = 20)	
-		cc.mvPTP([0,40,30],50)
+		cc.mvPTP([0,40,30],velocity = 50)
 		wait()
 		cc.mvLin([0,40,18])
 		wait()
-		#if True : # check if theres is an input from myo
-		#	cc.closeGrip(strength=350)
+		#if hub.pose == libmyo.Pose.fist: # check if theres is an input from myo		#	cc.closeGrip(strength=350)
+		
+		if myo._pose == libmyo.Pose.fist:
+			cc.closeGrip(speed = 100, strength = 350)
 		
 		wait()
 		cc.mvLin([0,40,30])
 		wait()
-		cc.mvPTP([20,0,60],50)
+		cc.mvPTP([20,0,60],velocity = 50)
 		wait()
-		cc.mvPTP([0,-40,30],50)
+		cc.mvPTP([0,-40,30],velocity = 50)
 		wait()
 		cc.mvLin([0,-40,10])
 		wait()
-		#if True:
-		#	cc.openGrip(amount=20, speed = 100)
-			
+		
+		
+		
+		wait()
 		cc.mvLin([0,-30,30])
+		
 except KeyboardInterrupt:
 		print("\nQuitting ...")
 finally:
