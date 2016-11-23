@@ -145,27 +145,7 @@ class Listener(libmyo.DeviceListener):
 		Called when the warmup completed.
 		"""
 
-cc=ccctrl.robot('COM9')
-#on windows write the com port as 'COM9' if its port 9.
 
-		
-#lock all motors so it's not just a coocked spagetti robot
-cc.torque_enable(254,True)
-cc.set_acceleration(4,5)
-cc.set_acceleration(254,10)
-time.sleep(0.05)
-
-def wait():
-	var = 0
-	while var !=5:
-		if cc.is_moving(var+1) == True:
-			var = 0
-		else:
-			var += 1
-	time.sleep(0.05)		
-			
-
-			
 
 hub = libmyo.Hub()
 
@@ -180,26 +160,24 @@ try:
 	if not myo:
 		print("No Myo connected after 2 seconds.")
 	
-		
-		releaseTime = time.time() + 3
-		myo.vibrate('medium')
-		while time.time() < releaseTime:
+	while True:	
+		releaseTime = time.time() + 3			
+		if myo._pose == libmyo.Pose.fist:
+			print("im sensing fisting")
+			time.sleep(2)	
 			
-			if myo._pose == libmyo.Pose.fingers_spread:
-				cc.openGrip(speed = 100)
-				myo.vibrate('short')
-				myo.vibrate('short')
-				myo.vibrate('short')
-				wait
-				break
-			elif myo._pose == libmyo.Pose.fist:
-				cc.closeGrip(speed = 100, strength = 350)
-				myo.vibrate('short')
-				myo.vibrate('short')
-				wait	
-				break
-		
-		
+		if myo.gyroscope[2] > 100:
+			print("to the left to the left")
+			time.sleep(0.2)
+		elif myo.gyroscope[2] < -100:
+			print("that was right")
+			time.sleep(0.2)
+		elif myo.gyroscope[1] > 100:
+			print("what up?")
+			time.sleep(0.2)
+		elif myo.gyroscope[1] < -100:
+			print("turn down for what!")
+			time.sleep(0.2)
 except KeyboardInterrupt:
 		print("\nQuitting ...")
 finally:
