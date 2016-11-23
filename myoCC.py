@@ -167,36 +167,49 @@ def wait():
 
 			
 
-print("Connecting to Myo ... Use CTRL^C to exit.")
-try:
-	hub = libmyo.Hub()
-	feed = libmyo.device_listener.Feed()
-except MemoryError:
-	print("Myo Hub could not be created. Make sure Myo Connect is running.")
-	
-hub.set_locking_policy(libmyo.LockingPolicy.none)
-hub.run(2000,feed())
+hub = libmyo.Hub()
 
+feed = libmyo.device_listener.Feed()
+hub.run(3000, feed)
 print("\nconnected")
 
 		# Listen to keyboard interrupts and stop the hub in that case.
 try:
+	print("Waiting for a Myo to connect ...")
+	myo = feed.wait_for_single_device(2)
+	if not myo:
+		print("No Myo connected after 2 seconds.")
 	while True:
 		cc.mvPTP([20,0,60],velocity = 50)
 		wait()
 		#cc.closeGrip(strength=200)
 		if cc.get_angle(4,True) < 5 : #are we holding the ball?
 			cc.openGrip(amount=20,speed=200)
-		cc.openGrip(speed = 50,amount = 20)	
+			
 		cc.mvPTP([0,40,30],velocity = 50)
 		wait()
 		cc.mvLin([0,40,18])
 		wait()
 		#if hub.pose == libmyo.Pose.fist: # check if theres is an input from myo		#	cc.closeGrip(strength=350)
 		
-		if myo._pose == libmyo.Pose.fist:
-			cc.closeGrip(speed = 100, strength = 350)
-		
+		releaseTime = time.time() + 3
+		myo.vibrate('medium')
+		while time.time() < releaseTime:
+			
+			if myo._pose == libmyo.Pose.fingers_spread:
+				cc.openGrip(speed = 100)
+				myo.vibrate('short')
+				myo.vibrate('short')
+				myo.vibrate('short')
+				wait
+				break
+			elif myo._pose == libmyo.Pose.fist:
+				cc.closeGrip(speed = 100, strength = 350)
+				myo.vibrate('short')
+				myo.vibrate('short')
+				wait	
+				break
+				
 		wait()
 		cc.mvLin([0,40,30])
 		wait()
@@ -204,11 +217,26 @@ try:
 		wait()
 		cc.mvPTP([0,-40,30],velocity = 50)
 		wait()
-		cc.mvLin([0,-40,10])
+		cc.mvLin([0,-40,11])
 		wait()
 		
-		
-		
+		releaseTime = time.time() + 3
+		myo.vibrate('medium')
+		while time.time() < releaseTime:
+			
+			if myo._pose == libmyo.Pose.fingers_spread:
+				cc.openGrip(speed = 100)
+				myo.vibrate('short')
+				myo.vibrate('short')
+				myo.vibrate('short')
+				wait
+				break
+			elif myo._pose == libmyo.Pose.fist:
+				cc.closeGrip(speed = 100, strength = 350)
+				myo.vibrate('short')
+				myo.vibrate('short')
+				wait	
+				break
 		wait()
 		cc.mvLin([0,-30,30])
 		
