@@ -223,9 +223,9 @@ class robot(dynamixel_mx):
 				#the loop breaks only if it passes throug all if statements
 			
 		
-	def mvPTP(self, point,velocity=10): 
+	def mvPTP(self, goal=[0,0,0],velocity=10): 
 		"""point should be in the cartesian space """
-		angles = self.ikine(*point) # calculate joint angles
+		angles = self.ikine(*goal) # calculate joint angles
 		for n in range(0,3):        # set the goal position of each joint
 			super().set_angle(n+1,angles[n],velocity) # uses the parrent method 
 		pass
