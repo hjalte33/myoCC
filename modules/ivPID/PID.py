@@ -74,7 +74,7 @@ class PID:
 
         """
         error = self.SetPoint - feedback_value
-
+        self.error=error
         self.current_time = time.time()
         delta_time = self.current_time - self.last_time
         delta_error = error - self.last_error

@@ -1,4 +1,4 @@
-import math
+"""import math
 import time
 from .dynamixel_mx_driver import dynamixel_mx
 from ..ivPID import PID
@@ -40,6 +40,7 @@ class robot(dynamixel_mx):
 		position.append(self.linkDim[0] + self.linkDim[2]*(math.cos(th2)*math.sin(th1 + math.pi/2) + math.cos(th1 + math.pi/2)*math.sin(th2)) + self.linkDim[1]*math.sin(th1 + math.pi/2))
 		
 		return position	
+
 		
 	def mvLin(self, goal = [0,0,0], velocity=0.1):
 		""" Velocity is in m/s """

@@ -2,11 +2,11 @@ import serial
 import random
 import time
 import array
-import math
+from math import pi, fabs
 
 class dynamixel_mx(object):
     """Communication with Dynamixel MX servos."""
-    def __init__(self, port, baudrate=1000000, timeout=1, DtrForRS485=False):
+    def __init__(self, port, baudrate=1000000, timeout=0.5, DtrForRS485=False):
         """Entry point for communicating with the Dynamixel servos.
 
         Args:
@@ -229,7 +229,7 @@ class dynamixel_mx(object):
         if isDeg == True:
             position = ((angle)+180)*(4096/360)
         else:
-            position = ((angle)+math.pi)*(4096/(2*math.pi))
+            position = ((angle)+pi)*(4096/(2*pi))
 
         setpoint_data = []
         setpoint_data.append(int(position) & 0xFF)
@@ -326,11 +326,44 @@ class dynamixel_mx(object):
         d_gain = int(k_d * 250)
         self.write_data(id=id, start_address=26, data=d_gain)
 
+    def set_torque_mode (self, id, enable_data):
+        """Enable consant torque on a servo.
+
+        Args:
+            id (int/list[int]): id(s) to en-/disable
+            enable (bool): True to enable, False to disable.
+
+        Returns:
+            Status packet, False if none was received.
+        """
+
+        if not(1 <= id <= 254):
+            raise ValueError("Target ID not in range [1, 254]")
+
+        if isinstance(id, list):
+            for i in id:
+                response = self.write_data(id=i, start_address=70, data=enable_data)
+        else:
+            response = self.write_data(id=id, start_address=70, data=enable_data)
+        return response
+    
+    def set_torque (self, id, torque):
+        if torque >= 0:
+            torque_data = []
+            torque_data.append(int(torque) & 0xFF)
+            torque_data.append((int(torque) & 0xFF00) >> 8)
+            self.write_data(id, start_address=71, data = torque_data)
+        else:
+            torque_data = []
+            torque_data.append(int(fabs(torque-1024)) & 0xFF)
+            torque_data.append((int(fabs(torque-1024)) & 0xFF00) >> 8)
+            self.write_data(id, start_address=71, data = torque_data)
+
     def is_moving(self, id):
         """check if the motor is still in motion"""
         m = None
         while type(m) != list:
-			#wait till we get a proper answer from the motors
+            #wait till we get a proper answer from the motors
             m = self.read_data(id, start_address=46, length=1)
         if m[0] == 0:
             return False
@@ -339,13 +372,14 @@ class dynamixel_mx(object):
 
     def stop(self,id):
         self.set_position(id, self.get_position(id),100)
-           
+    
     def get_position(self, id):
         """Query a servo for its position."""
         p = self.read_data(id, start_address=36, length=2)
         pos = p[0] + p[1]*256
         return pos
-
+        
+    #@classmethod
     def get_angle(self, id, isDeg=False):
         """return the angle value in radians or degrees. 2048 is 0 """
         p = self.read_data(id, start_address=36, length=2)
@@ -354,10 +388,34 @@ class dynamixel_mx(object):
             if isDeg == True:
                 return (pos-2048)* 0.087890625 #360/4096
             else:
-                return (pos-2048)*(0.0015339807878856412) #2*math.pi)/4096
+                return (pos-2048)*(0.0015339807878856412) #2*pi)/4096
         else :
             return False
-        
+    
+    #@classmethod 
+    def get_velocity(self, id):
+        #0.11 rpm per unit of messure 
+        v = self.read_data(id, start_address = 38, length = 2)
+        vel =  v[0] + v[1]*256
+        if vel >= 1024:
+            #negative direction
+            return -0.11 * (vel - 1024) 
+        else:
+            #positive direction
+            return 0.11 * vel    
+    
+   
+    def get_joint_limits(self, id, direction = None):
+        if direction == 'cw':
+            a = self.read_data(id = id, start_address = 6, length = 2)
+            ang = a[0] + a[1]*256
+            return ((ang-2048)*(2*pi)/4096)
+        elif direction == 'ccw':
+            a = self.read_data(id = id, start_address = 8, length = 2)
+            ang = a[0] + a[1]*256
+            return ((ang-2048)*(2*pi)/4096)
+    
+    
     def get_angles(self):
         """get all the angles from motor 1 through 3 
         and return them as a list """
@@ -481,6 +539,9 @@ class dynamixel_mx(object):
         self.serial_port.baudrate = current_baud
         return [hit, ids]
 
-# class inverse_kin (obj):
-#     """inverse kinematic"""
-#     def 
+    def enable_pid(self, id, enable=True):
+        if enable==True:
+            self.write_data(id,start_adress=70, data=1)
+        else :
+            self.write_data(id,start_adress=70, data=0)
+        
