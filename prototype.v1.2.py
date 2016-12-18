@@ -23,7 +23,7 @@ SOFTWARE.
 """
 import time
 import sys
-from modules import ccctrl
+from modules import ccctrlOLD
 #from modules import readCsv
 from modules import myo as libmyo ; libmyo.init('./myo-sdk-win-0.9.0/bin')
 
