@@ -27,124 +27,6 @@ from modules import ccctrl
 #from modules import readCsv
 from modules import myo as libmyo ; libmyo.init('./myo-sdk-win-0.9.0/bin')
 
-
-class Listener(libmyo.DeviceListener):
-	"""
-	Listener implementation. Return False from any function to
-	stop the Hub.
-	"""
-
-	interval = 0.05  # Output only 0.05 seconds
-
-	def __init__(self):
-		super(Listener, self).__init__()
-		self.orientation = None
-		self.pose = libmyo.Pose.rest
-		self.emg_enabled = False
-		self.locked = False
-		self.rssi = None
-		self.emg = None
-		self.last_time = 0
-		
-	def output(self):
-		
-		parts = []
-		if self.orientation:
-			parts.append(str(self.pose).ljust(10))
-		print('\r' + ''.join('[{0}]'.format(p) for p in parts), end='')
-		sys.stdout.flush()
-
-	def on_connect(self, myo, timestamp, firmware_version):
-		myo.vibrate('short')
-		myo.vibrate('short')
-		myo.request_rssi()
-		myo.request_battery_level()
-
-	def on_rssi(self, myo, timestamp, rssi):
-		self.rssi = rssi
-		
-
-	def on_pose(self, myo, timestamp, pose):
-		if pose == libmyo.Pose.fist:
-			myo.vibrate('short')
-			cc.closeGrip(speed = 100, strength = 350)
-		if pose == libmyo.Pose.fingers_spread:
-			myo.vibrate('short')
-			cc.openGrip(speed = 100)
-		self.pose = pose
-		self.output()
-
-	def on_orientation_data(self, myo, timestamp, orientation):
-		self.orientation = orientation
-		self.output()
-
-	def on_accelerometor_data(self, myo, timestamp, acceleration):
-		pass
-
-	def on_gyroscope_data(self, myo, timestamp, gyroscope):
-		pass
-
-	def on_emg_data(self, myo, timestamp, emg):
-		print(emg)
-		#self.emg = emg
-		#self.output()
-
-	def on_unlock(self, myo, timestamp):
-		self.locked = False
-		self.output()
-
-	def on_lock(self, myo, timestamp):
-		self.locked = True
-		self.output()
-
-	def on_event(self, kind, event):
-		"""
-		Called before any of the event callbacks.
-		"""
-
-	def on_event_finished(self, kind, event):
-		"""
-		Called after the respective event callbacks have been
-		invoked. This method is *always* triggered, even if one of
-		the callbacks requested the stop of the Hub.
-		"""
-
-	def on_pair(self, myo, timestamp, firmware_version):
-		"""
-		Called when a Myo armband is paired.
-		"""
-
-	def on_unpair(self, myo, timestamp):
-		"""
-		Called when a Myo armband is unpaired.
-		"""
-
-	def on_disconnect(self, myo, timestamp):
-		"""
-		Called when a Myo is disconnected.
-		"""
-
-	def on_arm_sync(self, myo, timestamp, arm, x_direction, rotation,
-					warmup_state):
-		"""
-		Called when a Myo armband and an arm is synced.
-		"""
-
-	def on_arm_unsync(self, myo, timestamp):
-		"""
-		Called when a Myo armband and an arm is unsynced.
-		"""
-
-	def on_battery_level_received(self, myo, timestamp, level):
-		"""
-		Called when the requested battery level received.
-		"""
-
-	def on_warmup_completed(self, myo, timestamp, warmup_result):
-		"""
-		Called when the warmup completed.
-		"""
-
 cc=ccctrl.robot('COM9')
 #on windows write the com port as 'COM9' if its port 9.
 
@@ -182,15 +64,19 @@ try:
 	while True:
 		cc.mvPTP([20,0,60],velocity = 50)
 		wait()
-		#cc.closeGrip(strength=200)
-		if cc.get_angle(4,True) < 5 : #are we holding the ball?
+		#try close the gripper
+		cc.closeGrip()
+		wait()
+		#are we holding the ball?
+		#if not open the gripper again
+		if cc.get_angle(4,True) < 5 : 
 			cc.openGrip(amount=20,speed=200)
 			
 		cc.mvPTP([0,40,30],velocity = 50)
 		wait()
 		cc.mvLin([0,40,18])
 		wait()
-		#if hub.pose == libmyo.Pose.fist: # check if theres is an input from myo		#	cc.closeGrip(strength=350)
+		
 		
 		releaseTime = time.time() + 3
 		myo.vibrate('medium')
